@@ -1,0 +1,44 @@
+CREATE TABLE usuarios (
+	id INT IDENTITY PRIMARY KEY,
+	nombre VARCHAR(MAX) NOT NULL,
+	correo VARCHAR(MAX) NOT NULL,
+	contrasena VARCHAR(MAX) NOT NULL
+);
+
+CREATE TABLE archivos (
+	id INT IDENTITY PRIMARY KEY,
+	nombre VARCHAR(MAX) NOT NULL,
+	origen VARCHAR(MAX) NOT NULL,
+	destino VARCHAR(MAX) NOT NULL,
+	disponible BIT DEFAULT(1)
+);
+
+CREATE TABLE uploads (
+	id INT IDENTITY PRIMARY KEY,
+	usuario_id INT,
+	archivo_id INT
+);
+
+CREATE TABLE papelera_de_reciclaje (
+	id INT IDENTITY PRIMARY KEY,
+	archivo_id INT
+);
+
+CREATE TABLE user_logs (
+	id INT IDENTITY PRIMARY KEY,
+	usuario_id INT,
+	archivo_id INT,
+	accion VARCHAR(MAX)
+);
+
+ALTER TABLE uploads ADD FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+ALTER TABLE uploads ADD FOREIGN KEY (archivo_id) REFERENCES archivos(id) ON DELETE CASCADE;
+ALTER TABLE papelera_de_reciclaje ADD FOREIGN KEY (archivo_id) REFERENCES archivos(id) ON DELETE CASCADE;
+ALTER TABLE user_logs ADD FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+ALTER TABLE user_logs ADD FOREIGN KEY (archivo_id) REFERENCES archivos(id) ON DELETE CASCADE;
+
+
+INSERT INTO usuarios (nombre, correo, contrasena) VALUES ('Luis Aguilar', 'luis@email.com', '12345');
+INSERT INTO usuarios (nombre, correo, contrasena) VALUES ('Jose Carrera', 'jose@email.com', '54321');
+
+INSERT INTO archivos (nombre, origen, destino) VALUES ('cancion.mp3', 'http://localhost:1234', 'C/:users/luis/archivos');

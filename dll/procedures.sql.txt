@@ -1,0 +1,47 @@
+CREATE PROCEDURE upload_file @Nombre VARCHAR(MAX), @Origen VARCHAR(MAX), @Destino VARCHAR(MAX), @userId INT
+AS
+BEGIN
+	DECLARE @fileId INT
+	
+	INSERT INTO archivos (nombre, origen, destino) VALUES (@Nombre, @Origen, @Destino)
+	
+	SET @fileId = SCOPE_IDENTITY()
+	
+	INSERT INTO uploads (usuario_id, archivo_id) VALUES(@userId, @fileId)
+	INSERT INTO user_logs (usuario_id, archivo_id, accion) VALUES (@userId, @fileId, 'Subir archivo');
+END
+
+CREATE PROCEDURE delete_file @userId INT, @fileId INT
+AS
+BEGIN
+	UPDATE archivos SET disponible = 0 WHERE id = @fileId;
+	INSERT INTO papelera_de_reciclaje (archivo_id) VALUES(@fileId);
+	INSERT INTO user_logs (usuario_id, archivo_id, accion) VALUES (@userId, @fileId, 'Borrar archivo');
+END
+
+CREATE PROCEDURE restore_file @userId INT, @fileId INT
+AS
+BEGIN
+	UPDATE archivos SET disponible = 1 WHERE id = @fileId;
+	DELETE FROM papelera_de_reciclaje WHERE archivo_id = @fileId;
+	INSERT INTO user_logs (usuario_id, archivo_id, accion) VALUES (@userId, @fileId, 'Restaurar archivo');
+END
+
+CREATE PROCEDURE get_logs
+AS
+BEGIN
+	SELECT ul.id AS log_id, u.nombre AS usuario, a.nombre AS archivo, accion
+	FROM user_logs AS ul
+	JOIN usuarios AS u ON u.id = ul.usuario_id 
+	JOIN archivos AS a ON a.id = ul.archivo_id 
+END
+
+CREATE PROCEDURE get_log @id INT
+AS
+BEGIN
+	SELECT ul.id AS log_id, u.nombre AS usuario, a.nombre AS archivo, accion
+	FROM user_logs AS ul
+	JOIN usuarios AS u ON u.id = ul.usuario_id 
+	JOIN archivos AS a ON a.id = ul.archivo_id
+	WHERE ul.id = @id
+END
